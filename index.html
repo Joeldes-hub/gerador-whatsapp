@@ -205,7 +205,7 @@
 
         <div class="field">
           <label for="numero">Número de telefone</label>
-          <input id="numero" type="text" placeholder="Ex.: 5599999999999" />
+          <input id="numero" type="text" placeholder="Ex.: 5598999999999" value="55" />
         </div>
       </div>
 
@@ -245,27 +245,43 @@
       return valor.replace(/\D/g, '');
     }
 
+    function garantirCodigoPais() {
+      let numero = limparNumero(numeroInput.value);
+
+      if (!numero.startsWith('55')) {
+        numero = '55' + numero.replace(/^55*/, '');
+      }
+
+      if (numero.length < 2) {
+        numero = '55';
+      }
+
+      numeroInput.value = numero;
+    }
+
     function gerarLink() {
+      garantirCodigoPais();
+
       const numero = limparNumero(numeroInput.value.trim());
       const mensagem = mensagemInput.value.trim();
       const tipo = tipoInput.value;
 
       erroBox.textContent = '';
 
-      if (!numero) {
-        erroBox.textContent = 'Digite um número de telefone válido.';
+      if (!numero || numero === '55') {
+        erroBox.textContent = 'Digite o DDD e o número de telefone.';
         linkBox.innerHTML = 'Nenhum link gerado ainda.';
         return null;
       }
 
-      if (numero.length < 10) {
-        erroBox.textContent = 'O número parece incompleto. Inclua DDI, DDD e telefone.';
+      if (numero.length < 12) {
+        erroBox.textContent = 'O número parece incompleto. Inclua 55, DDD e telefone.';
         linkBox.innerHTML = 'Nenhum link gerado ainda.';
         return null;
       }
 
       const textoCodificado = encodeURIComponent(mensagem);
-      const base = tipo === 'business' ? 'https://wa.me/' : 'https://wa.me/';
+      const base = 'https://wa.me/';
       const link = mensagem
         ? `${base}${numero}?text=${textoCodificado}`
         : `${base}${numero}`;
@@ -305,9 +321,19 @@
       }
     });
 
-    numeroInput.addEventListener('input', gerarLink);
+    numeroInput.addEventListener('input', () => {
+      garantirCodigoPais();
+      gerarLink();
+    });
+
+    numeroInput.addEventListener('focus', () => {
+      garantirCodigoPais();
+    });
+
     mensagemInput.addEventListener('input', gerarLink);
     tipoInput.addEventListener('change', gerarLink);
+
+    garantirCodigoPais();
   </script>
 </body>
 </html>
